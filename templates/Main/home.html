@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock title %}
+{% load static %}
+{% load chat_tags %}
+{% block home_style %}
+<style>
+    .profile-img {
+        width: 50px;
+        height: 50px;
+        background-color: skyblue;
+        border-radius: 50px;
+    }
+
+    .friend-profile-img {
+        width: 35px;
+        height: 35px;
+        background-color: pink;
+        border-radius: 50px;
+    }
+
+    .left-chat-box {
+        display: inline-flex;
+        background-color: purple;
+        padding: 3px;
+        color: white;
+        word-break: break-all;
+        max-width: 60%;
+    }
+
+    .right-chat-box {
+        display: inline-flex;
+        background-color: rgb(190, 0, 73);
+        padding: 3px;
+        color: white;
+        word-break: break-all;
+        max-width: 60%;
+    }
+
+    .message-box {
+        width: 100%;
+        text-align: center;
+        outline: none;
+        border: 0;
+        padding: 5px;
+        border-radius: 35px;
+        /* box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3); */
+    }
+
+    .btn-message-send {
+        border: 0;
+        outline: 0;
+        border-radius: 35px;
+        color: white;
+        background-color: green;
+    }
+
+    .btn-message-send i {
+        margin: 8px;
+    }
+    /*chrome*/
+    .friend-list::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        background: transparent;
+    }
+    .chat-box::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        background: transparent;
+    }
+    .users-list::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        background: transparent;
+    }
+    .friend-list {
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+    }
+
+    .chat-box {
+
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+    }
+
+    .users-list {
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+    }
+
+    .btn-add-friends {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    /* New friend sections  */
+    .new-friends-section {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.726);
+        z-index: 1000;
+    }
+
+    .user-profile-section {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.726);
+        z-index: 1000;
+    }
+</style>
+{% endblock home_style %}c
+{% block content %}
+
+<script>
+    $(document).ready(function(){
+        
+        $(".filter-search").on('click', function(){
+               //alert("$(this).text()");
+               //$(".filter-checkbox").removeClass("active");
+               //$(this).addClass("active");
+    
+            var filter_object={
+                   'search':$(".search-input").val()
+               };
+               console.log(filter_object);
+    
+            $.ajax({
+                url:'{% url "search_user" %}',
+                data:filter_object,
+                dataType:'json',
+                success:function(res){
+                    console.log(res)
+                    $("#filteredSearch").html(res.data);
+                }
+            });
+        });
+
+        $(".friend-tab").on('click', function(){
+
+            var filter_object={
+                   'friend_id':$(this).data('filter')
+               };
+               console.log(filter_object);
+    
+            $.ajax({
+                url:'{% url "chat_window" %}',
+                data:filter_object,
+                dataType:'json',
+                success:function(res){
+                    console.log(res)
+                    $("#filteredWindow").html(res.data);
+                }
+            });
+            
+        });
+    });
+    
+</script>
+
+<div class="container-fluid bg-light" style="height: 100vh;">
+    <div class="row justify-content-center g-2" style="height: 100%;">
+        <div class="bg-light col-lg-4 col-sm-12">
+            <div class="bg-dark text-white row d-flex flex-column shadow rounded-bottom">
+                <div class="container-fluid">
+                    <!-- Current User Profile -->
+                    <div class="row">
+                        <div class="col-4 d-flex justify-content-center p-2">
+                            <div class="profile-img shadow-sm">
+                                <!-- Profile Image goes here -->
+                                <img src=" {% static profile.image %} " alt="" class="profile-img" >
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="row m-1">
+                                <div class="col-8">
+                                    <h6> {{user.username | capfirst}} </h6>
+                                    <h6 class="text-secondary">{{profile.status}}</h6>
+                                </div>
+                                <div
+                                    class="col-4 d-flex justify-content-center align-items-center dropdown dropleft">
+                                    <span class="text-white p-1 rounded-pill shadow-sm" type="button"
+                                        id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </span>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" onclick="openProfileSection()"
+                                            style="cursor: pointer;">Profile</a>
+                                        <a class="dropdown-item" href=" {% url 'logout' %} ">Logout</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- User friends list goes here -->
+            <div class="container-fluid friend-list" id="friendlist" style="height: 530px; overflow-x: hidden; overflow-y: scroll;">
+                <div class="row flex-column justify-content-center align-items-center g-2">
+                    {% for f in friendlist %}
+                        {% getFriendData f.friend.id as friend %}
+                        {% checkOnline friend as active %}
+                        {% getProfile friend as fprofile %}
+                        {% countUnseenMsg friend user as countunseen %}
+
+                        {% if active %}
+                            <!-- Online User -->
+                            <div class="friend-tab col-12 bg-white mt-1 rounded shadow-sm border-left border-danger " style="cursor: pointer;" id="user-{{friend.id}}" data-filter="{{friend.id}}">
+                                <div class="row justify-content-center align-items-center g-2">
+                                    <div class="col-3 p-2 d-flex justify-content-center">
+                                        <div class="friend-profile-img shadow-sm">
+                                            <!-- Friend Profile Image -->
+                                            <img src=" {% static fprofile.image %} " alt="" class="friend-profile-img" >
+                                        </div>
+                                    </div>
+                                    <div class="col-7 p-2">
+                                        <h6>{{friend.username |capfirst}}</h6>
+                                        <h6 class="text-secondary">{{fprofile.status |capfirst}}</h6>
+                                    </div>
+                                    
+                                    
+                                    <div class="col-2 p-2 d-flex flex-column align-items-center">
+                                        <h6 class="{% if countunseen > 0 %} badge-success shadow-sm{% else %} badge-white text-white shadow-0 {% endif %} p-1 rounded-pill ">{{countunseen}}</h6>
+                                        <h6 class="text-secondary" style="font-size: 12px;" >{{f.lastseen.time}}</h6>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% else %}
+                            <!-- Offline User -->
+                            <div class="friend-tab col-12 bg-white mt-1 rounded shadow-sm border-left border-secondary" style="cursor: pointer;" id="user-{{friend.id}}" data-filter="{{friend.id}}">
+                                <div class="row justify-content-center align-items-center g-2">
+                                    <div class="col-3 p-2 d-flex justify-content-center">
+                                        <div class="friend-profile-img shadow-sm">
+                                            <!-- Friend Profile Image -->
+                                            <img src=" {% static fprofile.image %} " alt="" class="friend-profile-img" >
+                                        </div>
+                                    </div>
+                                    <div class="col-7 p-2">
+                                        <h6>{{friend.username |capfirst}}</h6>
+                                        <h6 class="text-secondary">{{fprofile.status |capfirst}}</h6>
+                                    </div>
+                                    <div class="col-2 p-2 d-flex flex-column align-items-center">
+                                        <h6 class="{% if countunseen > 0 %} badge-success shadow-sm{% else %} badge-white text-white shadow-0 {% endif %} p-1 rounded-pill ">{{countunseen}}</h6>
+                                        <h6 class="text-secondary" style="font-size: 12px;" >{{f.lastseen.time}}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <span class="btn-add-friends badge-success p-2 rounded-circle shadow-sm" onclick="openNewFDSection()">
+                <i class="fa-solid fa-comment-dots m-1"></i>
+            </span>
+        </div>
+        <!-- User Chat Section goes here -->
+        <div id="filteredWindow" class="bg-white col-lg-8 col-sm-12"
+            style="background: url(/static/images/chat_bg.png); background-size: contain;">
+            <!-- Fetch Content here -->
+
+        </div>
+    </div>
+
+</div>
+<!-- New friends adding sections -->
+<div class="new-friends-section container-fluid d-flex justify-content-center align-items-center"
+    id="new-friends-section" style="transform: scale(0);">
+    <div class="col-lg-6 col-sm-12 bg-light p-2 rounded"
+        style="height: 80%;background: url(/static/images/chat_bg.png); background-size: contain;">
+        <div class="col-12" style="height: 10%;">
+            <div class=" row justify-content-center align-items-center g-2">
+                <div class="col-8 d-flex justify-content-center">
+                    <input class="message-box shadow-lg search-input" type="text" name="search" id="search"
+                        placeholder="search user">
+                </div>
+                <div class="col-2 d-flex justify-content-center">
+                    <span class="badge-warning text-white p-2 rounded-circle shadow-sm filter-search">
+                        <i class="fa-solid fa-magnifying-glass m-1"></i>
+                    </span>
+                </div>
+                <div class="col-2 d-flex justify-content-center">
+                    <span class="badge-dark p-2 rounded-circle shadow-sm" onclick="closeNewFDSection()">
+                        <i class="fa-regular fa-circle-xmark m-1"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="users-list" style="height: 85%;overflow-x: hidden; overflow-y: scroll;">
+            <div class="row flex-column justify-content-center align-items-center g-2" id="filteredSearch">
+                {% for u in userlist %}
+                    {% getProfile u as profile %}
+                    {% checkFriend user u as friend %}
+                    {% removeCurrentUser user u as cuser %}
+
+                    {% if cuser %}
+                    
+                    {% else %}
+                        <!-- One User -->
+                        <div class="col-10 bg-white mt-1 rounded shadow-sm">
+                            <div class="row justify-content-center align-items-center g-2">
+                                <div class="col-3 p-2 d-flex justify-content-center">
+                                    <div class="friend-profile-img shadow-sm">
+                                        <!-- Friend Profile Image -->
+                                        <img src=" {% static profile.image %} " alt="" class="friend-profile-img" >
+                                    </div>
+                                </div>
+                                <div class="col-7 p-2">
+                                    <h6>{{u.username | capfirst }}</h6>
+                                    <h6 class="text-secondary"> {{profile.status}} </h6>
+                                </div>
+                                {% if friend %}
+                                    <div class="col-2 p-2 d-flex flex-column align-items-center ">
+                                        <span class="badge-success p-2 rounded-circle shadow-sm border-0">
+                                            <i class="fa-regular fa-circle-check m-1"></i>
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <form method="get" action=" {% url 'add_friend' %} " class="col-2 p-2 d-flex flex-column align-items-center ">
+                                        {% comment %} {% csrf_token %} {% endcomment %}
+                                        <input hidden type="text" name="user" id="" value={{u.id}}>
+                                        <button type="submit" class="badge-danger p-2 rounded-circle shadow-sm border-0">
+                                            <i class="fa-solid fa-user-plus m-1"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- User Profile Sections -->
+<div class="user-profile-section container-fluid d-flex justify-content-center align-items-center"
+    id="user-profile-section" style="transform: scale(0);">
+    <div class="col-lg-6 col-md-6 col-sm-12 bg-light p-2 rounded"
+        style="height: 80%; background: url(/static/images/chat_bg.png); background-size: contain;">
+        <div class="col-12 bg-white p-2 rounded shadow-sm">
+            <div class="row justify-content-center align-items-center g-2">
+                <div class="col-3"></div>
+                <div class="col-6">
+                    <form method="post" enctype="multipart/form-data" action=" {% url 'image_upload' %} " class="row justify-content-center align-items-center g-2" >
+                        {% csrf_token %}
+                        <div class="col-3 d-flex justify-content-center">
+                            <span class="badge-success p-2 rounded-circle shadow-sm" onclick="" >
+                                {% comment %} <i class="fa-solid fa-camera-retro m-1"></i> {% endcomment %}
+                                <input type="file" name="image" id="" class="rounded-circle shadow-sm" style="width:30px;">
+                            </span>
+                        </div>
+                        <div class="col-6 d-flex justify-content-center">
+                            <div class="profile-img shadow-sm">
+                                <!-- Profile Image goes here -->
+                                <img src=" {% static profile.image %} " alt="" class="profile-img" >
+                            </div>
+                        </div>
+                        <div class="col-3 d-flex justify-content-center">
+                            <button type="submit" class="badge-danger p-2 rounded-circle shadow-sm border-0">
+                                <i class="fa-solid fa-upload m-1"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-3 d-flex justify-content-center">
+                    <span class="badge-dark p-2 rounded-circle shadow-sm" onclick="closeProfileSection()">
+                        <i class="fa-regular fa-circle-xmark m-1"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12  mt-1 d-flex justify-content-center flex-column" style="height: 80%;">
+            <form action=" {% url 'profile_update' %} " method="post"
+                class="col-lg-8 col-sm-12 container p-3 bg-white shadow d-flex flex-column justify-content-between"
+                style="border-radius: 30px;">
+                
+                {% csrf_token %}
+                <div class="row m-1 justify-content-center align-items-center g-2">
+                    <label class="col" for="username">Username</label>
+                    <input class="col rounded-pill border-0 shadow-sm" type="text" name="username" id="username"
+                        placeholder="Enter Your Username" value="{{user.username}}">
+                </div>
+                <div class="row m-1 justify-content-center align-items-center g-2">
+                    <label class="col" for="email">Email</label>
+                    <input class="col rounded-pill border-0 shadow-sm" type="email" name="email" id="email"
+                        placeholder="Enter Your Email" value="{{user.email}}">
+                </div>
+                <div class="row m-1 justify-content-center align-items-center g-2">
+                    <label class="col" for="password">Password</label>
+                    <input class="col rounded-pill border-0 shadow-sm" type="password" name="password" id="password"
+                        placeholder="Enter Your Password">
+                </div>
+                <div class="row m-1 justify-content-center align-items-center g-2">
+                    <label class="col" for="status">Status</label>
+                    <input class="col rounded-pill border-0 shadow-sm" type="status" name="status" id="status"
+                        placeholder="Enter Your Status" value="{{profile.status}}">
+                </div>
+                <div class="row m-1 justify-content-center align-items-center g-2">
+                    <input type="submit" value="Update" class="btn btn-success rounded-pill">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    var newFriendSection = document.getElementById("new-friends-section");
+    var userProfileSection = document.getElementById("user-profile-section");
+
+    function openNewFDSection() {
+        newFriendSection.style.transform = "scale(1)";
+    }
+    function closeNewFDSection() {
+        newFriendSection.style.transform = "scale(0)";
+    }
+
+    function openProfileSection() {
+        userProfileSection.style.transform = "scale(1)";
+    }
+    function closeProfileSection() {
+        userProfileSection.style.transform = "scale(0)";
+    }
+
+    
+</script>
+{% endblock content %}

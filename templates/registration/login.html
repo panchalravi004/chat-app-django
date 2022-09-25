@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}User Login{% endblock title %}
+{% block content %}
+
+<div class="col-12 d-flex justify-content-center ">
+    <div class="col-4">
+        {% include 'component/msg.html' %}
+    </div>
+</div>
+<div class="container d-flex  justify-content-center p-5 mt-5">
+    <!-- User Login Section -->
+    <div class="card p-2" id="section-login" style="border-radius: 20px;box-shadow: 0 0 10px rgb(218, 217, 217); cursor: pointer;">
+        <div class="card-head d-flex justify-content-center">
+            <h3>User Login</h3>
+        </div>
+        <div class="card-body">
+            <div class="container">
+                <form method="post" action=" {% url 'dologin' %} " >
+                    {% csrf_token %}
+                    <div class="mb-4 mt-4 row">
+                        <label for="inputName" class="col-4 col-form-label">Email</label>
+                        <div class="col-8">
+                            <input type="text" class="form-control" name="email" id="email" placeholder="Enter Email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-4 row">
+                        <label for="inputName" class="col-4 col-form-label">Password</label>
+                        <div class="col-8">
+                            <input type="password" class="form-control" name="password" id="password" placeholder="Enter password" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-4 row">
+                        <div class="col-sm-12 d-flex justify-content-center">
+                            <button type="submit" class="btn bg-success text-white" style="border-radius:50px;">Login</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="container d-flex justify-content-center">
+            
+            <div class="col-6 d-flex justify-content-center">
+                <a onclick="openRegistration()">Not User ?</a>
+            </div>
+            <div class="col-6 d-flex justify-content-center">
+                <a>Forgot Password ?</a>
+            </div>
+        </div>
+    </div>
+    <!-- Registration -->
+    <div class="card p-2" id="section-registration" style="border-radius: 20px;box-shadow: 0 0 10px rgb(218, 217, 217); cursor: pointer; display: none;">
+        <div class="card-head  d-flex justify-content-center">
+            <h3>User Registration</h3>
+        </div>
+        <div class="card-body">
+            <div class="container">
+                <form method="post" action=" {% url 'register' %} " >
+                    {% csrf_token %}
+                    <div class="mb-4 mt-4 row">
+                        <label for="username" class="col-4 col-form-label">User Name</label>
+                        <div class="col-8">
+                            <input type="text" class="form-control" name="username" id="username" placeholder="Enter username" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 mt-4 row">
+                        <label for="email" class="col-4 col-form-label">Email</label>
+                        <div class="col-8">
+                            <input type="email" class="form-control" name="email" id="email" placeholder="Enter email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-4 row">
+                        <label for="password" class="col-4 col-form-label">Password</label>
+                        <div class="col-8">
+                            <input type="password" class="form-control" name="password" id="password" placeholder="Enter password" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-4 row">
+                        <div class="col-sm-12 d-flex justify-content-center">
+                            <button type="submit" class="btn bg-warning text-white" style="border-radius:50px;">Registration</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="container d-flex justify-content-center">
+            <a onclick="openLogin()">Login</a>
+        </div>
+    </div>
+</div>
+<script>
+
+    var login = document.getElementById("section-login");
+    var registration = document.getElementById("section-registration");
+    
+    function openLogin() {
+        login.style.display="block";
+        registration.style.display="none";
+    }
+    function openRegistration() {
+        login.style.display="none";
+        registration.style.display="block";
+    }
+
+</script>
+
+{% endblock content %}

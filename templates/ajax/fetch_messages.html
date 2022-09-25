@@ -1,0 +1,27 @@
+
+{% load static %}
+{% load chat_tags %}
+{% getProfile friend as profile %}
+
+
+{% for c in chat %}
+{% checkUser user.id c.sender.id as result %}
+    {% if result %}
+        <div class="col-12 mt-2 d-flex flex-column align-items-end">
+            <div class="right-chat-box shadow rounded-bottom rounded-left">
+                <h6 style="font-size: 12px;">{{c.msg}}</h6>
+            </div>
+            <h6 class="text-secondary bg-white rounded" style="font-size: 10px;">
+                {{c.sendtime.time}}
+                {% if c.status %}<i class="fa-solid fa-check text-primary"></i>{% endif %}
+            </h6>
+        </div>
+    {% else %}
+        <div class="col-12 mt-2 d-flex flex-column align-items-start">
+            <div class="left-chat-box shadow rounded-bottom rounded-right">
+                <h6 style="font-size: 12px;">{{c.msg}}</h6>
+            </div>
+            <h6 class="text-secondary bg-white rounded" style="font-size: 10px;">{{c.sendtime.time}}</h6>
+        </div>
+    {% endif %}
+{% endfor %}

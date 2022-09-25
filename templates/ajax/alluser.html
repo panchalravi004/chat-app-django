@@ -1,0 +1,44 @@
+{% load static %}
+{% load chat_tags %}
+
+{% for u in userlist %}
+{% getProfile u as profile %}
+{% checkFriend user u as friend %}
+{% removeCurrentUser user u as cuser %}
+
+{% if cuser %}
+
+{% else %}
+    <!-- One User -->
+    <div class="col-10 bg-white mt-1 rounded shadow-sm">
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col-3 p-2 d-flex justify-content-center">
+                <div class="friend-profile-img shadow-sm">
+                    <!-- Friend Profile Image -->
+                    <img src=" {% static profile.image %} " alt="" class="friend-profile-img" >
+                </div>
+            </div>
+            <div class="col-7 p-2">
+                <h6>{{u.username | capfirst }}</h6>
+                <h6 class="text-secondary">{{profile.status}} </h6>
+            </div>
+            {% if friend %}
+                <div class="col-2 p-2 d-flex flex-column align-items-center ">
+                    <span class="badge-success p-2 rounded-circle shadow-sm border-0">
+                        <i class="fa-regular fa-circle-check m-1"></i>
+                    </span>
+                </div>
+            {% else %}
+                <form method="get" action=" {% url 'add_friend' %} " class="col-2 p-2 d-flex flex-column align-items-center ">
+                    {% comment %} {% csrf_token %} {% endcomment %}
+                    <input hidden type="text" name="user" id="" value={{u.id}}>
+                    <button type="submit" class="badge-danger p-2 rounded-circle shadow-sm border-0">
+                        <i class="fa-solid fa-user-plus m-1"></i>
+                    </button>
+                </form>
+            {% endif %}
+            
+        </div>
+    </div>
+{% endif %}
+{% endfor %}

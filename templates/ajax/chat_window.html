@@ -1,0 +1,128 @@
+{% load static %}
+{% load chat_tags %}
+{% getProfile friend as profile %}
+
+<script>
+    $(document).ready(function(){
+
+        $("#send-btn").on('click', function(){
+            //alert("hello");
+            var filter_object={
+                   'user':"{{user.id}}",
+                   'friend':"{{friend.id}}",
+                   'msg':$(".msg").val()
+               };
+            console.log(filter_object);
+            //send message
+            $.ajax({
+                url:'{% url "send_message" %}',
+                data:filter_object,
+            });
+
+            //fetch message
+            var filter_object={
+                'user':"{{user.id}}",
+                'friend':"{{friend.id}}",
+            };
+            $.ajax({
+                url:'{% url "fetch_message" %}',
+                data:filter_object,
+                dataType:'json',
+                success:function(res){
+                    //console.log(res)
+                    $(".chat-box").html(res.data);
+                }
+            });
+
+            $(".msg").val("")
+    
+        });
+    });
+</script>
+
+<div class="row flex-column justify-content-center align-items-center g-2">
+    <!-- Chat room header -->
+    <div class="col-12 bg-dark text-white shadow-lg pt-2 pb-2 rounded-bottom">
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col-3 d-flex justify-content-around">
+                <span class="text-white p-1 rounded-pill" type="button" id="dropdownMenuButton"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa-solid fa-angles-left"></i>
+                </span>
+                <div class="friend-profile-img shadow-sm">
+                    <!-- Friend Profile Image -->
+                    <img src=" {% static profile.image %} " alt="" class="friend-profile-img" >
+                </div>
+            </div>
+            <div class="col-7 ">
+                <div class="row justify-content-center align-items-center">
+                    <h6 class="col-6">{{friend.username |capfirst}}</h6>
+                    <h6 class="col-6 text-secondary">{{profile.active}}</h6>
+                </div>
+            </div>
+            <div class="col-2 d-flex justify-content-center dropdown dropleft">
+                <span class="text-white p-1 rounded-pill" type="button" id="dropdownMenuButton"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </span>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="/chat-window/clear/{{friend.id}}">Clear Chat</a>
+                    <a class="dropdown-item" href="/chat-window/delete/{{friend.id}}">Delete User</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="container" style="height: 550px;">
+            <!-- show chat here -->
+            <div class="chat-box col-12 p-2"
+                style=" height: 90%; overflow-x: hidden; overflow-y: scroll;">
+                {% for c in chat %}
+                {% checkUser user.id c.sender.id as result %}
+                    {% if result %}
+                        <div class="col-12 mt-2 d-flex flex-column align-items-end">
+                            <div class="right-chat-box shadow rounded-bottom rounded-left">
+                                <h6 style="font-size: 12px;">{{c.msg}}</h6>
+                            </div>
+                            <h6 class="text-secondary bg-white rounded" style="font-size: 10px;">
+                                {{c.sendtime.time}}
+                                {% if c.status %}<i class="fa-solid fa-check text-primary"></i>{% endif %}
+                            </h6>
+                        </div>
+                    {% else %}
+                        <div class="col-12 mt-2 d-flex flex-column align-items-start">
+                            <div class="left-chat-box shadow rounded-bottom rounded-right">
+                                <h6 style="font-size: 12px;">{{c.msg}}</h6>
+                            </div>
+                            <h6 class="text-secondary bg-white rounded" style="font-size: 10px;">{{c.sendtime.time}}</h6>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <!-- Send message from here  method="get" action=" {% url 'send_message' %} "-->
+            <div class="col-12 bg-dark rounded-pill pt-2" style="height: 10%;">
+                <div class="row align-items-center">
+                    {% comment %} {% csrf_token %} {% endcomment %}
+                    <input class="user" hidden type="text" value="{{user.id}}" name="user">
+                    <input class="friend" hidden type="text" value="{{friend.id}}" name="friend">
+                    <div class="col-10 d-flex justify-content-center ">
+                        <input class="msg message-box bg-dark text-white" autocomplete="off" type="text"
+                            placeholder="Enter message to send here" name="msg">
+                    </div>
+                    <div class="col-2 d-flex justify-content-end ">
+                        <button type="submit" id="send-btn" class="btn-message-send p-1 shadow">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        //$('.friend-list').scrollTop($('.friend-list').scrollHeight);
+        $('.chat-box').scrollTop($('.friend-list')[0].scrollHeight);
+        //alert($('.friend-list')[0].scrollHeight);
+    });
+</script>
